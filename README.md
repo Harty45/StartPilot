@@ -1,4 +1,3 @@
-# StartPilot
 <!DOCTYPE html>
 <html>
 <head>
