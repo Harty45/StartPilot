@@ -1,206 +1,178 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>StartPilot - Social Network</title>
+  <title>StartPilot</title>
   <style>
-    body { font-family: Arial, sans-serif; margin: 0; background: #f0f2f5; }
-    header { background: #4267B2; color: white; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; }
-    header h1 { margin: 0; font-size: 22px; }
-    header .profile { cursor: pointer; font-size: 14px; }
+    body { font-family: Arial, sans-serif; margin:0; background:#f0f2f5; }
+    header { background:#4267B2; color:white; padding:12px 20px; display:flex; justify-content:space-between; align-items:center; cursor:pointer; }
+    header h1 { margin:0; }
+    header .profile { cursor:pointer; font-size:14px; }
 
-    .wrapper { display: grid; grid-template-columns: 200px 1fr 200px; gap: 20px; padding: 20px; }
-    .sidebar, .friends, .profilePage { background: white; border-radius: 10px; padding: 15px; height: fit-content; }
-    .main { background: white; border-radius: 10px; padding: 20px; }
-    h2 { margin-top: 0; }
-    input, textarea { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ddd; border-radius: 6px; }
-    button { padding: 8px 15px; background: #4267B2; color: white; border: none; border-radius: 6px; cursor: pointer; }
-    button:hover { background: #365899; }
-    .post { border: 1px solid #ddd; padding: 10px; margin: 12px 0; border-radius: 6px; background: #fafafa; }
-    .tabs { display: flex; gap: 10px; margin-bottom: 10px; }
-    .tab { padding: 8px 12px; background: #eee; border-radius: 6px; cursor: pointer; }
-    .tab.active { background: #4267B2; color: white; }
-    video, img { max-width: 100%; border-radius: 8px; margin-top: 10px; }
-    .profilePage img { max-width: 120px; border-radius: 50%; }
+    .container { display:none; padding:20px; max-width:600px; margin:20px auto; background:white; border-radius:12px; box-shadow:0 0 10px rgba(0,0,0,0.1);}
+    input, textarea { width:100%; padding:10px; margin:8px 0; border:1px solid #ddd; border-radius:6px; }
+    button { padding:10px; background:#4267B2; color:white; border:none; border-radius:6px; cursor:pointer; margin-top:10px; width:100%; }
+    button:hover { background:#365899; }
+    .switch { text-align:center; color:#007bff; cursor:pointer; margin-top:10px; }
+    .post { border:1px solid #ddd; padding:10px; margin:12px 0; border-radius:6px; background:#fafafa; }
+    img, video { max-width:100%; border-radius:8px; margin-top:10px; }
+    .profilePage img { max-width:120px; border-radius:50%; }
+    .homeHeader { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
   </style>
 </head>
 <body>
 
-<header>
+<header onclick="goHome()">
   <h1>StartPilot</h1>
   <div class="profile" onclick="openProfile(currentUser.profileName)">My Profile</div>
 </header>
 
-<div class="wrapper">
-  <!-- Sidebar -->
-  <div class="sidebar">
-    <h3>Menu</h3>
-    <div onclick="showSection('feed')" class="tab active">Feed</div>
-    <div onclick="showSection('pictures')" class="tab">Pictures</div>
-    <div onclick="showSection('videos')" class="tab">Videos</div>
-  </div>
+<!-- Signup / Login Page -->
+<div class="container" id="authPage">
+  <h2>Login / Sign Up</h2>
+  <input type="text" id="username" placeholder="Username">
+  <input type="password" id="password" placeholder="Password">
+  <button onclick="login()">Login</button>
+  <button onclick="signup()">Sign Up</button>
+  <div class="switch">No account? Use Sign Up above.</div>
+</div>
 
-  <!-- Main Feed -->
-  <div class="main" id="mainContent">
-    <h2 id="sectionTitle">Feed</h2>
-    <textarea id="postText" placeholder="What's on your mind?"></textarea>
-    <input type="file" id="postFile" accept="image/*,video/*">
-    <button onclick="createPost()">Post</button>
-    <div id="postsArea"></div>
+<!-- Home Page -->
+<div class="container" id="homePage">
+  <div class="homeHeader">
+    <h2>Welcome, <span id="homeName"></span>!</h2>
+    <button onclick="logout()">Log Out</button>
   </div>
+  <textarea id="postText" placeholder="What's on your mind?"></textarea>
+  <input type="file" id="postFile" accept="image/*,video/*">
+  <button onclick="createPost()">Post</button>
+  <div id="postsArea"></div>
+</div>
 
-  <!-- Friends -->
-  <div class="friends">
-    <h3>Friends</h3>
-    <input type="text" id="friendName" placeholder="Add friend by name">
-    <button onclick="addFriend()">Add Friend</button>
-    <ul id="friendList"></ul>
-  </div>
+<!-- Profile Page -->
+<div class="container" id="profilePage">
+  <div class="profilePage" id="profileContent"></div>
 </div>
 
 <script>
-// ==========================
-// Setup user profile (demo)
-// ==========================
-let currentUser = JSON.parse(localStorage.getItem("userProfile")) || {
-  profileName: "User123",
-  realName: "John Doe",
-  lastName: "Smith",
-  birthday: "2000-01-01",
-  age: 24,
-  profilePic: ""
-};
-localStorage.setItem("userProfile", JSON.stringify(currentUser));
+let currentUser = null;
 
-let currentSection = "feed";
+// Check if someone is logged in
+if(localStorage.getItem("loggedInUser")){
+  currentUser = JSON.parse(localStorage.getItem(localStorage.getItem("loggedInUser")));
+  showHome();
+} else {
+  showAuth();
+}
 
-// ==========================
-// Create Posts
-// ==========================
-function createPost() {
+// ====== Auth Functions ======
+function signup(){
+  let username = document.getElementById("username").value;
+  let password = document.getElementById("password").value;
+  if(!username || !password){ alert("Fill all fields"); return; }
+  // Password check: 6+ chars, number & lowercase
+  let passRegex = /^(?=.*[a-z])(?=.*[0-9]).{6,}$/;
+  if(!passRegex.test(password)){ alert("Password must have 6+ chars, a number, and a lowercase letter."); return; }
+  
+  if(localStorage.getItem(username)){ alert("Username exists!"); return; }
+  let user = { profileName: username, realName:"", lastName:"", birthday:"", profilePic:"", password: password, friends: [] };
+  localStorage.setItem(username, JSON.stringify(user));
+  alert("Account created! Now log in.");
+}
+
+function login(){
+  let username = document.getElementById("username").value;
+  let password = document.getElementById("password").value;
+  let stored = localStorage.getItem(username);
+  if(!stored){ alert("User not found"); return; }
+  let user = JSON.parse(stored);
+  if(user.password !== password){ alert("Incorrect password"); return; }
+  currentUser = user;
+  localStorage.setItem("loggedInUser", username);
+  showHome();
+}
+
+// ====== Show Pages ======
+function showAuth(){ document.getElementById("authPage").style.display="block"; document.getElementById("homePage").style.display="none"; document.getElementById("profilePage").style.display="none"; }
+function showHome(){ 
+  document.getElementById("authPage").style.display="none"; 
+  document.getElementById("homePage").style.display="block"; 
+  document.getElementById("profilePage").style.display="none"; 
+  document.getElementById("homeName").innerText = currentUser.profileName;
+  loadPosts();
+}
+function openProfile(username){
+  document.getElementById("authPage").style.display="none"; 
+  document.getElementById("homePage").style.display="none"; 
+  document.getElementById("profilePage").style.display="block"; 
+
+  let user = JSON.parse(localStorage.getItem(username));
+  if(!user){ alert("User not found"); return; }
+
+  let isOwner = username===currentUser.profileName;
+  let profileHTML = `<h2>${user.profileName}'s Profile</h2>`;
+  profileHTML += user.profilePic ? `<img src="${user.profilePic}">` : `<img src="https://via.placeholder.com/120">`;
+  profileHTML += `<p><strong>Real Name:</strong> ${user.realName} ${user.lastName}</p>`;
+  if(isOwner){ profileHTML += `<p><strong>Birthday:</strong> ${user.birthday}</p>`; }
+  if(!isOwner){ profileHTML += `<button onclick="addFriend('${username}')">Add Friend</button>`; }
+
+  profileHTML += `<h3>Friends:</h3><ul>`;
+  (user.friends || []).forEach(f=>{ profileHTML+=`<li><a href='#' onclick='openProfile("${f}")'>${f}</a></li>`; });
+  profileHTML += `</ul>`;
+  document.getElementById("profileContent").innerHTML = profileHTML;
+}
+
+// ====== Posts ======
+function createPost(){
   let text = document.getElementById("postText").value;
   let fileInput = document.getElementById("postFile");
   let posts = JSON.parse(localStorage.getItem("posts")) || [];
-  let user = currentUser;
-
-  let newPost = { author: user.profileName, text: text, type: "text" };
-
-  if (fileInput.files.length > 0) {
+  let newPost = { author: currentUser.profileName, text:text, type:"text" };
+  
+  if(fileInput.files.length>0){
     let file = fileInput.files[0];
     let reader = new FileReader();
-    reader.onload = function(e) {
-      if (file.type.startsWith("image/")) { newPost.type = "image"; newPost.src = e.target.result; }
-      else if (file.type.startsWith("video/")) { newPost.type = "video"; newPost.src = e.target.result; }
+    reader.onload = function(e){
+      if(file.type.startsWith("image/")){ newPost.type="image"; newPost.src=e.target.result; }
+      else if(file.type.startsWith("video/")){ newPost.type="video"; newPost.src=e.target.result; }
       posts.push(newPost);
       localStorage.setItem("posts", JSON.stringify(posts));
-      resetPostForm();
+      document.getElementById("postText").value="";
+      fileInput.value="";
       loadPosts();
-    };
+    }
     reader.readAsDataURL(file);
   } else {
     posts.push(newPost);
     localStorage.setItem("posts", JSON.stringify(posts));
-    resetPostForm();
+    document.getElementById("postText").value="";
     loadPosts();
   }
 }
 
-function resetPostForm() {
-  document.getElementById("postText").value = "";
-  document.getElementById("postFile").value = "";
-}
-
-function loadPosts() {
+function loadPosts(){
   let posts = JSON.parse(localStorage.getItem("posts")) || [];
   let postsArea = document.getElementById("postsArea");
-  postsArea.innerHTML = "";
-
-  let filtered = posts.filter(p => {
-    if (currentSection === "feed") return true;
-    if (currentSection === "pictures") return p.type === "image";
-    if (currentSection === "videos") return p.type === "video";
-  });
-
-  filtered.reverse().forEach(p => {
+  postsArea.innerHTML="";
+  posts.reverse().forEach(p=>{
     let div = document.createElement("div");
-    div.className = "post";
-    div.innerHTML = "<strong><a href='#' onclick='openProfile(\"" + p.author + "\")'>" + p.author + "</a>:</strong> " + (p.text || "");
-    if (p.type === "image") div.innerHTML += "<br><img src='" + p.src + "'>";
-    if (p.type === "video") div.innerHTML += "<br><video controls src='" + p.src + "'></video>";
+    div.className="post";
+    div.innerHTML=`<strong><a href='#' onclick='openProfile("${p.author}")'>${p.author}</a>:</strong> ${p.text || ""}`;
+    if(p.type==="image"){ div.innerHTML+=`<br><img src='${p.src}'>`; }
+    if(p.type==="video"){ div.innerHTML+=`<br><video controls src='${p.src}'></video>`; }
     postsArea.appendChild(div);
   });
 }
 
-// ==========================
-// Sections
-// ==========================
-function showSection(section) {
-  currentSection = section;
-  document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
-  let tabs = document.querySelectorAll(".sidebar .tab");
-  if (section === "feed") tabs[0].classList.add("active");
-  if (section === "pictures") tabs[1].classList.add("active");
-  if (section === "videos") tabs[2].classList.add("active");
-  document.getElementById("sectionTitle").innerText = section.charAt(0).toUpperCase() + section.slice(1);
-  loadPosts();
+// ====== Friends ======
+function addFriend(username){
+  if(!currentUser.friends.includes(username)){ currentUser.friends.push(username); }
+  localStorage.setItem(currentUser.profileName, JSON.stringify(currentUser));
+  alert(username + " added as friend!");
 }
 
-// ==========================
-// Friends System
-// ==========================
-function addFriend() {
-  let name = document.getElementById("friendName").value;
-  if (!name) return;
-  let friends = JSON.parse(localStorage.getItem("friends")) || [];
-  if (!friends.includes(name)) friends.push(name);
-  localStorage.setItem("friends", JSON.stringify(friends));
-  document.getElementById("friendName").value = "";
-  loadFriends();
-}
-
-function loadFriends() {
-  let friends = JSON.parse(localStorage.getItem("friends")) || [];
-  let list = document.getElementById("friendList");
-  list.innerHTML = "";
-  friends.forEach(f => {
-    let li = document.createElement("li");
-    li.innerHTML = "<a href='#' onclick='openProfile(\"" + f + "\")'>" + f + "</a>";
-    list.appendChild(li);
-  });
-}
-
-// ==========================
-// Profile Page
-// ==========================
-function openProfile(profileName) {
-  let main = document.getElementById("mainContent");
-  let user = JSON.parse(localStorage.getItem("userProfile")) || currentUser;
-  let isOwner = (profileName === user.profileName);
-
-  main.innerHTML = `
-    <div class="profilePage">
-      <h2>${user.profileName}'s Profile</h2>
-      ${user.profilePic ? `<img src="${user.profilePic}">` : `<img src="https://via.placeholder.com/120">`}
-      <p><strong>Real Name:</strong> ${user.realName} ${user.lastName}</p>
-      ${isOwner ? `<p><strong>Age:</strong> ${user.age}</p>` : ""}
-      <p><strong>Birthday:</strong> ${user.birthday}</p>
-      ${!isOwner ? `<button onclick="addFriendFromProfile('${user.profileName}')">Add Friend</button>` : ""}
-    </div>
-  `;
-}
-
-function addFriendFromProfile(name) {
-  let friends = JSON.parse(localStorage.getItem("friends")) || [];
-  if (!friends.includes(name)) friends.push(name);
-  localStorage.setItem("friends", JSON.stringify(friends));
-  loadFriends();
-  alert("Friend request sent to " + name);
-}
-
-// ==========================
-// Initial Load
-// ==========================
-loadPosts();
-loadFriends();
+// ====== Header / Log Out ======
+function logout(){ localStorage.removeItem("loggedInUser"); currentUser=null; showAuth(); }
+function goHome(){ if(currentUser) showHome(); }
 </script>
 
 </body>
