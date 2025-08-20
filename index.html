@@ -1,82 +1,566 @@
-<!-- Home Page -->
-<div class="container" id="homePage">
-  <div class="homeHeader">
-    <h2>Welcome, <span id="homeName"></span>!</h2>
-    <button onclick="logout()">Log Out</button>
-  </div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Start Pilot</title>
+  <style>
+    :root{
+      /* Brand orange sampled from your image */
+      --brand:#F4C06A; /* second image is close #F5C87D */
+      --brand-ink:#1f1f1f;
+      --bg:#f8f8f8;
+      --card:#ffffff;
+      --muted:#666;
+      --ok:#22c55e;
+      --warn:#dc2626;
+      --border:#e5e7eb;
+      --radius:18px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,Apple Color Emoji,Segoe UI Emoji;
+      background:var(--bg); color:#111; overflow-y:scroll;
+    }
+    a{color:inherit}
 
-  <div class="homeLayout">
-    <!-- Friends Sidebar -->
-    <div class="sidebar">
-      <h3>Friends</h3>
-      <ul id="friendsList"></ul>
+    /* Shared header */
+    header.appbar{
+      position:sticky; top:0; z-index:50;
+      display:flex; align-items:center; gap:14px;
+      padding:10px 16px; background:var(--brand);
+      border-bottom:1px solid rgba(0,0,0,.06);
+    }
+    .logo{ font-weight:900; letter-spacing:.3px; }
+    .logo a{ text-decoration:none; color:#fff; font-size:28px; }
+    .searchbar{ flex:1; display:flex; gap:8px; }
+    .searchbar input{ flex:1; border:1px solid var(--border); background:#fff; border-radius:999px; padding:10px 14px; }
+    .profile-chip{ margin-left:auto; display:flex; align-items:center; gap:10px; cursor:pointer; }
+    .avatar{ width:36px; height:36px; background:#fff; color:#222; display:grid; place-items:center; border-radius:999px; border:2px solid rgba(0,0,0,.08); font-weight:700; }
+
+    /* Page framing */
+    .wrap{ max-width:1200px; margin:18px auto; padding:0 16px; }
+    .grid{ display:grid; grid-template-columns:260px 1fr 320px; gap:18px; }
+
+    .card{ background:var(--card); border:1px solid var(--border); border-radius:var(--radius); box-shadow:0 6px 14px rgba(0,0,0,.04); }
+    .card h3{ margin:0; padding:14px 16px; border-bottom:1px solid var(--border); }
+    .card .body{ padding:14px 16px; }
+    .btn{ background:#111; color:#fff; border:none; border-radius:12px; padding:10px 14px; cursor:pointer; font-weight:600; }
+    .btn.secondary{ background:#fff; color:#111; border:1px solid var(--border); }
+    .btn.warn{ background:var(--warn); }
+    .btn.ok{ background:var(--ok); }
+    .muted{ color:var(--muted); }
+    .row{ display:flex; gap:10px; align-items:center; }
+    .col{ display:flex; flex-direction:column; gap:10px; }
+    input[type=text],input[type=password],input[type=date],select,textarea{
+      width:100%; padding:10px 12px; border-radius:12px; border:1px solid var(--border); background:#fff;
+    }
+    textarea{ min-height:90px; }
+    .hidden{ display:none !important; }
+    .error{ color:var(--warn); font-weight:700; }
+    .success{ color:var(--ok); font-weight:700; }
+
+    /* Auth pages */
+    .center{ max-width:980px; margin:40px auto; display:grid; grid-template-columns:1.1fr .9fr; gap:26px; align-items:center; }
+    .hero{ padding:24px; }
+    .hero h1{ font-size:56px; line-height:1; margin:0 0 10px; color:var(--brand-ink); }
+    .hero p{ margin:0; font-size:18px; color:#333; }
+    .panel{ background:#fff; border:1px solid var(--border); border-radius:24px; padding:18px; box-shadow:0 6px 14px rgba(0,0,0,.04); }
+    .tabs{ display:flex; gap:8px; margin-bottom:12px; }
+    .tab{ flex:1; padding:10px; text-align:center; border-radius:12px; border:1px solid var(--border); background:#fafafa; cursor:pointer; font-weight:700; }
+    .tab.active{ background:var(--brand); color:#fff; border-color:transparent; }
+
+    /* Post feed */
+    .composer .row{ align-items:flex-start; }
+    .post{ border-top:1px solid var(--border); padding:14px 0; }
+    .post:first-child{ border-top:none; }
+    .post .meta{ display:flex; align-items:center; gap:10px; margin-bottom:8px; }
+    .post .content img, .post .content video{ max-width:100%; border-radius:12px; margin-top:8px; }
+
+    /* Friends sidebar */
+    .friend-item{ display:flex; align-items:center; justify-content:space-between; gap:8px; padding:8px 0; border-top:1px dashed var(--border); }
+    .friend-item:first-child{ border-top:none; }
+    .pill{ padding:2px 8px; border-radius:999px; font-size:12px; border:1px solid var(--border); }
+
+    /* Profile page */
+    .profile-header{ display:flex; gap:18px; align-items:center; padding:18px; border-bottom:1px solid var(--border); }
+    .big-avatar{ width:72px; height:72px; border-radius:999px; background:var(--brand); color:#fff; display:grid; place-items:center; font-size:28px; font-weight:900; }
+    .kv{ display:grid; grid-template-columns:160px 1fr; gap:8px; padding:8px 0; }
+
+    /* Small screens */
+    @media (max-width:980px){
+      .center{ grid-template-columns:1fr; }
+      .grid{ grid-template-columns:1fr; }
+      .searchbar{ display:none; }
+    }
+  </style>
+</head>
+<body>
+  <!-- AppBar is visible on every route, but the logo only navigates home if authenticated -->
+  <header class="appbar">
+    <div class="logo"><a href="#" id="logoLink">Start Pilot</a></div>
+    <div class="searchbar" id="globalSearchWrap">
+      <input id="globalSearch" placeholder="Search people…" />
+      <button class="btn" id="globalSearchBtn">Search</button>
     </div>
-
-    <!-- News Feed -->
-    <div class="feed">
-      <!-- Post box -->
-      <div class="createPostBox">
-        <textarea id="postText" placeholder="What's on your mind?"></textarea>
-        <input type="file" id="postFile" accept="image/*,video/*">
-        <button onclick="createPost()">Post</button>
-      </div>
-
-      <!-- Posts appear here -->
-      <div id="postsArea"></div>
+    <div class="profile-chip hidden" id="profileChip">
+      <div class="avatar" id="chipAvatar">SP</div>
+      <div id="chipName" class="muted"></div>
     </div>
+  </header>
 
-    <!-- Videos Sidebar -->
-    <div class="sidebar">
-      <h3>Videos</h3>
-      <div id="videoList"></div>
-    </div>
-  </div>
-</div>
-
-<style>
-  .homeLayout { display:flex; gap:20px; }
-  .sidebar { flex:1; background:#f7f7f7; padding:10px; border-radius:10px; height:fit-content; }
-  .feed { flex:2; }
-  .createPostBox { border:1px solid #ddd; padding:10px; border-radius:10px; background:#fff; margin-bottom:20px; }
-  .createPostBox textarea { width:100%; border:1px solid #ccc; border-radius:6px; padding:8px; }
-  .createPostBox input { margin:8px 0; }
-  #postsArea .post { background:#fff; border:1px solid #ddd; padding:12px; margin-bottom:15px; border-radius:10px; }
-</style>
+  <!-- ROUTES -->
+  <main id="routeContainer"></main>
 
 <script>
-function loadPosts(){
-  let posts = JSON.parse(localStorage.getItem("posts")) || [];
-  let postsArea = document.getElementById("postsArea");
-  let videoList = document.getElementById("videoList");
-  let friendsList = document.getElementById("friendsList");
+/****************************
+ *  Start Pilot — front-end only demo
+ *  Storage: localStorage (separate per browser profile/account)
+ *  No backend; all data is simulated in the browser.
+ ****************************/
+const ORANGE = getComputedStyle(document.documentElement).getPropertyValue('--brand').trim();
+const state = {
+  me: null, // {username}
+  users: load('sp_users', {}), // username -> { username, passHash, profile:{profileName, firstName,lastName,birthday}, friends:[], requests:[] }
+  posts: load('sp_posts', []), // {id, author, text, mediaType, mediaDataURL, privacy:'public'|'private', createdAt}
+};
 
-  postsArea.innerHTML="";
-  videoList.innerHTML="";
-  friendsList.innerHTML="";
-
-  // Render friends list
-  (currentUser.friends || []).forEach(f=>{
-    let li=document.createElement("li");
-    li.innerHTML=`<a href='#' onclick='openProfile("${f}")'>${f}</a>`;
-    friendsList.appendChild(li);
-  });
-
-  // Render posts
-  posts.reverse().forEach(p=>{
-    let div = document.createElement("div");
-    div.className="post";
-    div.innerHTML=`<strong><a href='#' onclick='openProfile("${p.author}")'>${p.author}</a>:</strong> ${p.text || ""}`;
-    if(p.type==="image"){ div.innerHTML+=`<br><img src='${p.src}' style="max-width:100%; border-radius:10px; margin-top:10px;">`; }
-    if(p.type==="video"){ 
-      div.innerHTML+=`<br><video controls src='${p.src}' style="max-width:100%; border-radius:10px; margin-top:10px;"></video>`; 
-      // Also add to right sidebar "Videos"
-      let vid=document.createElement("div");
-      vid.innerHTML=`<video controls src='${p.src}' style="width:100%; border-radius:10px; margin-bottom:10px;"></video>`;
-      videoList.appendChild(vid);
-    }
-    postsArea.appendChild(div);
-  });
+/************* Utilities *************/
+function save(key, val){ localStorage.setItem(key, JSON.stringify(val)); }
+function load(key, fallback){ try{ return JSON.parse(localStorage.getItem(key)) ?? fallback }catch{ return fallback } }
+function hash(str){ // very light hash for demo ONLY
+  let h=0; for(let i=0;i<str.length;i++){ h=((h<<5)-h)+str.charCodeAt(i); h|=0 } return 'h'+Math.abs(h);
 }
+function uid(){ return 'id'+Math.random().toString(36).slice(2)+Date.now().toString(36) }
+function initials(u){ const p = user(u)?.profile||{}; const a=(p.firstName?.[0]||u?.[0]||'S'); const b=(p.lastName?.[0]||p.profileName?.[0]||'P'); return (a+b).toUpperCase(); }
+function user(username){ return state.users[username] }
+function setMe(u){ state.me=u; sessionStorage.setItem('sp_me', u||''); refreshAppBar(); }
+function isAuthed(){ return !!state.me }
+function assertAuthed(){ if(!isAuthed()) location.hash = '#/auth' }
+
+// Simple profanity block list (expand as needed)
+const BAD_WORDS = ['fuck','shit','bitch','asshole','bastard','dick','pussy','cunt','nigger','fag','cock','whore'];
+function containsBadWords(text){ if(!text) return false; const t = String(text).toLowerCase(); return BAD_WORDS.some(w=>t.includes(w)); }
+
+/************* Routing *************/
+window.addEventListener('hashchange', route); // logo & nav call route()
+window.addEventListener('DOMContentLoaded', () => {
+  const existing = sessionStorage.getItem('sp_me');
+  if(existing) setMe(existing);
+  route();
+  refreshAppBar();
+});
+
+function route(){
+  const r = location.hash || '#/auth';
+  if(r.startsWith('#/auth')) return renderAuth();
+  if(!isAuthed()) { location.hash = '#/auth'; return }
+  if(r.startsWith('#/setup')) return renderSetup();
+  if(r.startsWith('#/profile/')) return renderProfile(r.split('/')[2]);
+  // default home
+  return renderHome();
+}
+
+/************* Header controls *************/
+function refreshAppBar(){
+  const chip = document.getElementById('profileChip');
+  const logo = document.getElementById('logoLink');
+  const searchWrap = document.getElementById('globalSearchWrap');
+  if(isAuthed()){
+    chip.classList.remove('hidden');
+    document.getElementById('chipAvatar').textContent = initials(state.me);
+    document.getElementById('chipName').textContent = user(state.me)?.profile?.profileName || state.me;
+    searchWrap.classList.remove('hidden');
+    document.getElementById('globalSearchBtn').onclick = ()=> doGlobalSearch();
+    document.getElementById('globalSearch').onkeydown = e=>{ if(e.key==='Enter') doGlobalSearch() };
+    logo.onclick = (e)=>{ e.preventDefault(); location.hash = '#/home' };
+    chip.onclick = ()=> location.hash = `#/profile/${state.me}`;
+  }else{
+    chip.classList.add('hidden');
+    searchWrap.classList.add('hidden');
+    logo.onclick = (e)=>{ e.preventDefault(); /* disabled when not authed */ };
+  }
+}
+function doGlobalSearch(){
+  const q = document.getElementById('globalSearch').value.trim().toLowerCase();
+  if(!q) return;
+  const hits = Object.keys(state.users).filter(u=>u!==state.me).filter(u=>{
+    const p = state.users[u].profile||{};
+    return [u,p.profileName,p.firstName,p.lastName].filter(Boolean).some(v=>String(v).toLowerCase().includes(q));
+  });
+  if(hits.length){ location.hash = `#/profile/${hits[0]}`; }
+}
+
+/************* AUTH *************/
+function renderAuth(){
+  document.getElementById('routeContainer').innerHTML = `
+    <div class="center">
+      <div class="hero">
+        <h1>Start Pilot</h1>
+        <p>Connect with friends and share your world — in warm, friendly orange.</p>
+      </div>
+      <div class="panel">
+        <div class="tabs">
+          <div class="tab active" id="tabLogin">Log in</div>
+          <div class="tab" id="tabSignup">Sign up</div>
+        </div>
+        <div id="authArea"></div>
+      </div>
+    </div>`;
+  document.getElementById('tabLogin').onclick = ()=> showLogin();
+  document.getElementById('tabSignup').onclick = ()=> showSignup();
+  showLogin();
+}
+
+function showLogin(){
+  document.getElementById('tabLogin').classList.add('active');
+  document.getElementById('tabSignup').classList.remove('active');
+  document.getElementById('authArea').innerHTML = `
+    <div class="col">
+      <label>Username</label>
+      <input id="li_user" placeholder="your username" />
+      <label>Password</label>
+      <input id="li_pass" type="password" placeholder="••••••" />
+      <div id="li_err" class="error"></div>
+      <button class="btn" id="li_btn">Log in</button>
+    </div>`;
+  document.getElementById('li_btn').onclick = ()=>{
+    const u = li_user.value.trim();
+    const p = li_pass.value;
+    const rec = user(u);
+    if(!rec || rec.passHash !== hash(p)){
+      li_err.textContent = 'Invalid username or password.'; return;
+    }
+    setMe(u);
+    // if no profile yet -> setup
+    if(!rec.profile){ location.hash = '#/setup'; } else { location.hash = '#/home' }
+  };
+}
+
+function showSignup(){
+  document.getElementById('tabSignup').classList.add('active');
+  document.getElementById('tabLogin').classList.remove('active');
+  document.getElementById('authArea').innerHTML = `
+    <div class="col">
+      <label>Create a username</label>
+      <input id="su_user" maxlength="24" placeholder="no swearing, keep it clean" />
+      <label>Create a password</label>
+      <input id="su_pass" type="password" placeholder="6–19 characters, letters & numbers" />
+      <div id="su_err" class="error"></div>
+      <button class="btn ok" id="su_btn">Sign up</button>
+    </div>`;
+  document.getElementById('su_btn').onclick = ()=>{
+    const u = su_user.value.trim();
+    const p = su_pass.value;
+    // Username rules
+    if(!u){ su_err.textContent='Username is required.'; return; }
+    if(containsBadWords(u)){ su_err.textContent='Usernames cannot include profanity or inappropriate words.'; return; }
+    if(state.users[u]){ su_err.textContent='That username is taken.'; return; }
+    // Password rules
+    const hasLen = p.length>5 && p.length<20;
+    const hasLetters = /[a-zA-Z]/.test(p);
+    const hasNums = /[0-9]/.test(p);
+    if(!(hasLen && hasLetters && hasNums)){
+      su_err.textContent='Password must be 6–19 chars and include letters and numbers.'; return;
+    }
+    // Create user
+    state.users[u] = { username:u, passHash:hash(p), profile:null, friends:[], requests:[] };
+    save('sp_users', state.users);
+    setMe(u);
+    location.hash = '#/setup';
+  }
+}
+
+/************* Setup Profile *************/
+function renderSetup(){ assertAuthed();
+  const me = user(state.me);
+  document.getElementById('routeContainer').innerHTML = `
+    <div class="wrap">
+      <div class="card">
+        <h3>Set up your profile</h3>
+        <div class="body col">
+          <div class="row"><div class="big-avatar">${initials(state.me)}</div><div class="muted">Your avatar is auto‑generated from your initials.</div></div>
+          <div class="row" style="gap:14px">
+            <div class="col" style="flex:1">
+              <label>Profile Name</label>
+              <input id="pf_profileName" placeholder="Display name" value="${me.profile?.profileName||''}" />
+            </div>
+          </div>
+          <div class="row" style="gap:14px">
+            <div class="col" style="flex:1">
+              <label>First Name</label>
+              <input id="pf_first" value="${me.profile?.firstName||''}" />
+            </div>
+            <div class="col" style="flex:1">
+              <label>Last Name</label>
+              <input id="pf_last" value="${me.profile?.lastName||''}" />
+            </div>
+          </div>
+          <div class="col" style="max-width:340px">
+            <label>Birthday</label>
+            <input id="pf_bday" type="date" value="${me.profile?.birthday||''}" />
+          </div>
+          <div id="pf_err" class="error"></div>
+          <div class="row" style="justify-content:flex-end">
+            <button class="btn ok" id="pf_done">Done</button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  document.getElementById('pf_done').onclick = ()=>{
+    const profile = {
+      profileName: document.getElementById('pf_profileName').value.trim(),
+      firstName: document.getElementById('pf_first').value.trim(),
+      lastName: document.getElementById('pf_last').value.trim(),
+      birthday: document.getElementById('pf_bday').value
+    };
+    if(!profile.profileName || !profile.firstName || !profile.lastName || !profile.birthday){ pf_err.textContent='Please complete all fields.'; return; }
+    state.users[state.me].profile = profile;
+    save('sp_users', state.users);
+    location.hash = '#/home';
+  }
+}
+
+/************* Home *************/
+function renderHome(){ assertAuthed();
+  const me = user(state.me);
+  const myFriends = new Set(me.friends);
+  const feed = state.posts
+    .filter(p=> p.privacy==='public' || p.author===state.me || myFriends.has(p.author))
+    .sort((a,b)=> b.createdAt - a.createdAt);
+  document.getElementById('routeContainer').innerHTML = `
+    <div class="wrap grid">
+      <!-- Left: Feeds / notifications -->
+      <div class="card">
+        <h3>Feeds</h3>
+        <div class="body" id="feedList">${renderFeedList(feed)}</div>
+      </div>
+
+      <!-- Center: Composer + posts -->
+      <div>
+        <div class="card composer">
+          <h3>Create Post</h3>
+          <div class="body col">
+            <textarea id="post_text" placeholder="What's on your mind?"></textarea>
+            <div class="row">
+              <input type="file" id="post_media" accept="image/*,video/*" />
+              <select id="post_privacy">
+                <option value="public">Public</option>
+                <option value="private">Private</option>
+              </select>
+              <div class="muted" style="margin-left:auto">No swearing or inappropriate words.</div>
+            </div>
+            <div id="post_err" class="error"></div>
+            <button class="btn" id="post_btn">Post</button>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:18px">
+          <h3>Recent Posts</h3>
+          <div class="body" id="postList"></div>
+        </div>
+      </div>
+
+      <!-- Right: Friends connection -->
+      <div class="card">
+        <h3>Friends</h3>
+        <div class="body col">
+          <div class="row">
+            <input id="friendSearch" placeholder="Search users…" />
+            <button class="btn" id="friendSearchBtn">Search</button>
+          </div>
+          <div id="friendResults"></div>
+          <hr style="border:none;border-top:1px solid var(--border)">
+          <div class="muted">Requests</div>
+          <div id="requestList"></div>
+          <hr style="border:none;border-top:1px solid var(--border)">
+          <div class="muted">Your Friends (${me.friends.length})</div>
+          <div id="friendList"></div>
+        </div>
+      </div>
+    </div>`;
+
+  // Wire up composer
+  document.getElementById('post_btn').onclick = async ()=>{
+    const text = document.getElementById('post_text').value.trim();
+    if(containsBadWords(text)){ post_err.textContent='Post blocked for inappropriate language.'; return; }
+    const file = document.getElementById('post_media').files[0];
+    let mediaType=null, data=null;
+    if(file){
+      if(file.type.startsWith('image/')) mediaType='image';
+      if(file.type.startsWith('video/')) mediaType='video';
+      data = await fileToDataURL(file);
+    }
+    const post = { id:uid(), author:state.me, text, mediaType, mediaDataURL:data, privacy:document.getElementById('post_privacy').value, createdAt:Date.now() };
+    state.posts.push(post); save('sp_posts', state.posts);
+    document.getElementById('post_text').value=''; document.getElementById('post_media').value='';
+    renderPosts(feedTarget());
+    document.getElementById('feedList').innerHTML = renderFeedList(feedTarget());
+  };
+
+  document.getElementById('friendSearchBtn').onclick = doFriendSearch;
+  document.getElementById('friendSearch').onkeydown = e=>{ if(e.key==='Enter') doFriendSearch() };
+
+  // Initial lists
+  renderPosts(feed);
+  renderFriendLists();
+}
+
+function feedTarget(){
+  const me = user(state.me); const myFriends=new Set(me.friends);
+  return state.posts.filter(p=> p.privacy==='public' || p.author===state.me || myFriends.has(p.author)).sort((a,b)=>b.createdAt-a.createdAt);
+}
+function renderFeedList(feed){
+  if(feed.length===0) return '<div class="muted">No new posts yet.</div>';
+  const items = feed.slice(0,10).map(p=>{
+    const author = user(p.author); const name = author.profile?.profileName||p.author;
+    return `<div class="row" style="justify-content:space-between; padding:6px 0">
+      <div class="row" style="gap:10px"><div class="avatar" style="background:${ORANGE}; color:#fff">${initials(p.author)}</div><div><div><strong>${name}</strong></div><div class="muted" style="font-size:12px">${new Date(p.createdAt).toLocaleString()}</div></div></div>
+      <a href="#/profile/${p.author}" class="pill">View profile</a>
+    </div>`
+  }).join('');
+  return items;
+}
+
+async function fileToDataURL(file){
+  return await new Promise(res=>{ const fr=new FileReader(); fr.onload=()=>res(fr.result); fr.readAsDataURL(file); });
+}
+
+function renderPosts(feed){
+  const el = document.getElementById('postList');
+  if(!el) return;
+  if(feed.length===0){ el.innerHTML='<div class="body muted">No posts yet. Be the first!</div>'; return; }
+  el.innerHTML = feed.map(p=>{
+    const author = user(p.author); const name = author.profile?.profileName||p.author;
+    const media = p.mediaType==='image' ? `<img src="${p.mediaDataURL}" alt="image">` : p.mediaType==='video' ? `<video src="${p.mediaDataURL}" controls></video>` : '';
+    return `<div class="post">
+      <div class="meta">
+        <div class="avatar" style="background:${ORANGE}; color:#fff">${initials(p.author)}</div>
+        <div>
+          <div><strong>${name}</strong> · <span class="pill">${p.privacy}</span></div>
+          <div class="muted" style="font-size:12px">${new Date(p.createdAt).toLocaleString()}</div>
+        </div>
+        <div style="margin-left:auto"><a class="pill" href="#/profile/${p.author}">Profile</a></div>
+      </div>
+      <div class="content">${p.text? `<div>${escapeHtml(p.text)}</div>`:''}${media}
+      </div>
+    </div>`
+  }).join('');
+}
+
+function escapeHtml(s){ return s.replace(/[&<>]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c])) }
+
+/************* Friends *************/
+function doFriendSearch(){
+  const q = document.getElementById('friendSearch').value.trim().toLowerCase();
+  const results = Object.values(state.users).filter(u=>u.username!==state.me).filter(u=>{
+    const p=u.profile||{}; return [u.username,p.profileName,p.firstName,p.lastName].filter(Boolean).some(v=>String(v).toLowerCase().includes(q));
+  });
+  const me = user(state.me);
+  friendResults.innerHTML = results.length? results.map(u=>{
+    const isFriend = me.friends.includes(u.username);
+    const hasReq = u.requests.includes(state.me);
+    return `<div class="friend-item">
+      <div class="row"><div class="avatar" style="background:${ORANGE}; color:#fff">${initials(u.username)}</div>
+        <div>
+          <div><strong>${u.profile?.profileName||u.username}</strong></div>
+          <div class="muted" style="font-size:12px">@${u.username}</div>
+        </div>
+      </div>
+      <div class="row">
+        <a class="pill" href="#/profile/${u.username}">Profile</a>
+        ${ isFriend ? '<span class="pill">Friends</span>' : hasReq ? '<span class="pill">Requested</span>' : `<button class="btn" onclick="sendRequest('${u.username}')">Add</button>`}
+      </div>
+    </div>`
+  }).join('') : '<div class="muted">No users found.</div>';
+}
+
+function sendRequest(to){
+  const target = user(to); if(!target) return;
+  if(!target.requests.includes(state.me)) target.requests.push(state.me);
+  save('sp_users', state.users); renderFriendLists(); doFriendSearch();
+}
+
+function renderFriendLists(){
+  const me = user(state.me);
+  // Requests
+  requestList.innerHTML = me.requests.length? me.requests.map(u=>{
+    const uu = user(u); return `<div class="friend-item">
+      <div class="row"><div class="avatar" style="background:${ORANGE}; color:#fff">${initials(u)}</div><div><div><strong>${uu.profile?.profileName||u}</strong></div><div class="muted" style="font-size:12px">@${u}</div></div></div>
+      <div class="row"><button class="btn ok" onclick="acceptReq('${u}')">Accept</button><button class="btn secondary" onclick="declineReq('${u}')">Decline</button></div>
+    </div>`
+  }).join('') : '<div class="muted">No pending requests.</div>';
+  // Friends
+  friendList.innerHTML = me.friends.length? me.friends.map(u=>{
+    const uu=user(u); return `<div class="friend-item">
+      <div class="row"><div class="avatar" style="background:${ORANGE}; color:#fff">${initials(u)}</div><div><div><strong>${uu.profile?.profileName||u}</strong></div><div class="muted" style="font-size:12px">@${u}</div></div></div>
+      <a class="pill" href="#/profile/${u}">View</a>
+    </div>`
+  }).join('') : '<div class="muted">No friends yet. Search to add people.</div>'
+}
+
+function acceptReq(from){
+  const me = user(state.me); const other = user(from);
+  me.requests = me.requests.filter(x=>x!==from);
+  if(!me.friends.includes(from)) me.friends.push(from);
+  if(!other.friends.includes(state.me)) other.friends.push(state.me);
+  save('sp_users', state.users); renderFriendLists();
+}
+function declineReq(from){
+  const me = user(state.me); me.requests = me.requests.filter(x=>x!==from);
+  save('sp_users', state.users); renderFriendLists();
+}
+
+/************* Profile page *************/
+function renderProfile(username){ assertAuthed();
+  const u = user(username); if(!u){ location.hash='#/home'; return }
+  const isMe = username===state.me;
+  const canAdd = !isMe && !user(state.me).friends.includes(username) && !u.requests.includes(state.me);
+  const theirPosts = state.posts.filter(p=> p.author===username && (p.privacy==='public' || isMe)).sort((a,b)=>b.createdAt-a.createdAt);
+  document.getElementById('routeContainer').innerHTML = `
+    <div class="wrap">
+      <div class="card">
+        <div class="profile-header">
+          <div class="big-avatar">${initials(username)}</div>
+          <div>
+            <div style="font-size:24px; font-weight:900">${u.profile?.profileName||username}</div>
+            <div class="muted">@${username}</div>
+            <div class="row" style="margin-top:8px; gap:8px">
+              <span class="pill">Friends: ${u.friends.length}</span>
+              ${ !isMe ? `<button class="btn" ${canAdd?`onclick="sendRequest('${username}')"`:''}>${ canAdd? 'Add Friend':'Connected' }</button>`:'' }
+              ${ isMe ? `<button class="btn secondary" onclick="logout()">Log out</button>`:'' }
+            </div>
+          </div>
+        </div>
+        <div class="body">
+          <div class="kv"><div>First Name</div><div><strong>${u.profile?.firstName||'—'}</strong></div></div>
+          <div class="kv"><div>Last Name</div><div><strong>${u.profile?.lastName||'—'}</strong></div></div>
+          <div class="kv"><div>Birthday</div><div><strong>${u.profile?.birthday||'—'}</strong></div></div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:18px">
+        <h3>Posts by ${u.profile?.profileName||username}</h3>
+        <div class="body" id="profilePosts">${ theirPosts.length? '' : '<div class="muted">No posts yet.</div>'}</div>
+      </div>
+    </div>`;
+  // Render their posts
+  const container = document.getElementById('profilePosts');
+  container.innerHTML = theirPosts.map(p=>{
+    const media = p.mediaType==='image' ? `<img src="${p.mediaDataURL}">` : p.mediaType==='video' ? `<video src="${p.mediaDataURL}" controls></video>` : '';
+    return `<div class="post">
+      <div class="muted" style="font-size:12px">${new Date(p.createdAt).toLocaleString()} · ${p.privacy}</div>
+      ${p.text? `<div style="margin-top:6px">${escapeHtml(p.text)}</div>`:''}
+      ${media}
+    </div>`
+  }).join('');
+}
+
+function logout(){ setMe(null); location.hash = '#/auth'; }
+
 </script>
+</body>
+</html>
 
 
