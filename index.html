@@ -10,7 +10,6 @@
       padding: 0;
     }
 
-    /* Header */
     header {
       background: #4CAF50;
       color: white;
@@ -19,26 +18,25 @@
       font-weight: bold;
     }
 
-    /* Layout */
     .wrapper {
       display: flex;
       justify-content: center;
       align-items: center;
-      height: calc(100vh - 60px); /* full height minus header */
+      min-height: calc(100vh - 60px);
+      padding: 20px;
     }
 
-    /* White box */
     .container {
       background: white;
-      padding: 30px 40px 30px 30px; /* more padding on right side */
+      padding: 30px 40px 30px 30px;
       border-radius: 12px;
       box-shadow: 0 0 12px rgba(0,0,0,0.15);
-      width: 320px;
+      width: 350px;
     }
 
     h2 { text-align: center; margin-bottom: 15px; }
 
-    input {
+    input, textarea {
       width: 100%;
       padding: 10px;
       margin: 8px 0;
@@ -66,15 +64,32 @@
       color: #007bff;
       cursor: pointer;
     }
+
+    /* Home feed */
+    #posts { margin-top: 15px; }
+    .post {
+      background: #fafafa;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 10px;
+      margin: 8px 0;
+    }
+
+    .profile-pic {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin-bottom: 10px;
+    }
   </style>
 </head>
 <body>
 
-<!-- Website header -->
 <header>StartPilot</header>
 
-<!-- Wrapper to center the content -->
 <div class="wrapper">
+
   <!-- Sign Up -->
   <div class="container" id="signup">
     <h2>Sign Up</h2>
@@ -92,6 +107,37 @@
     <button onclick="login()">Login</button>
     <div class="switch" onclick="showSignup()">Don’t have an account? Sign Up</div>
   </div>
+
+  <!-- Age Check -->
+  <div class="container" id="ageCheck" style="display:none;">
+    <h2>Age Verification</h2>
+    <label>
+      <input type="checkbox" id="ageBox"> I am 13 years or older
+    </label>
+    <button onclick="verifyAge()">Continue</button>
+  </div>
+
+  <!-- Profile Setup -->
+  <div class="container" id="profileSetup" style="display:none;">
+    <h2>Build Profile</h2>
+    <input type="text" id="profileName" placeholder="Profile Name">
+    <input type="text" id="realName" placeholder="First Name">
+    <input type="text" id="lastName" placeholder="Last Name">
+    <input type="date" id="birthday">
+    <label>Upload Profile Picture (optional):</label>
+    <input type="file" id="profilePic" accept="image/*">
+    <button onclick="finishProfile()">Done</button>
+  </div>
+
+  <!-- Home Page -->
+  <div class="container" id="homePage" style="display:none; width:500px;">
+    <h2 id="welcomeMsg">Welcome!</h2>
+    <img id="profileImage" class="profile-pic" style="display:none;">
+    <textarea id="newPost" placeholder="What's on your mind?" style="width:100%; height:60px; margin-top:10px;"></textarea>
+    <button onclick="addPost()">Post</button>
+    <div id="posts"></div>
+  </div>
+
 </div>
 
 <script>
@@ -117,22 +163,120 @@ function login() {
   let storedPass = localStorage.getItem("password");
 
   if (username === storedUser && password === storedPass) {
-    alert("Login successful! 🎉");
+    localStorage.setItem("loggedInUser", username);
+    document.getElementById("login").style.display = "none";
+    document.getElementById("ageCheck").style.display = "block";
   } else {
     alert("Incorrect username or password.");
+  }
+}
+
+function verifyAge() {
+  let checkbox = document.getElementById("ageBox");
+  if (checkbox.checked) {
+    document.getElementById("ageCheck").style.display = "none";
+    document.getElementById("profileSetup").style.display = "block";
+  } else {
+    alert("You must be 13 years or older to continue.");
+  }
+}
+
+function finishProfile() {
+  let profilePicInput = document.getElementById("profilePic");
+  let file = profilePicInput.files[0];
+
+  if (file) {
+    let reader = new FileReader();
+    reader.onload = function(e) {
+      saveProfile(e.target.result);
+    };
+    reader.readAsDataURL(file);
+  } else {
+    saveProfile("");
+  }
+}
+
+function saveProfile(picData) {
+  let profile = {
+    profileName: document.getElementById("profileName").value,
+    realName: document.getElementById("realName").value,
+    lastName: document.getElementById("lastName").value,
+    birthday: document.getElementById("birthday").value,
+    profilePic: picData
+  };
+
+  localStorage.setItem("userProfile", JSON.stringify(profile));
+
+  document.getElementById("profileSetup").style.display = "none";
+  document.getElementById("homePage").style.display = "block";
+
+  let welcome = "Welcome, " + profile.profileName + "! 🎉";
+  document.getElementById("welcomeMsg").innerText = welcome;
+
+  if (profile.profilePic) {
+    let img = document.getElementById("profileImage");
+    img.src = profile.profilePic;
+    img.style.display = "block";
+  }
+
+  loadPosts();
+}
+
+function addPost() {
+  let text = document.getElementById("newPost").value.trim();
+  if (text === "") return;
+
+  let posts = JSON.parse(localStorage.getItem("posts")) || [];
+  let user = JSON.parse(localStorage.getItem("userProfile"));
+
+  let newPost = {
+    author: user.profileName,
+    text: text,
+    pic: user.profilePic
+  };
+
+  posts.unshift(newPost);
+  localStorage.setItem("posts", JSON.stringify(posts));
+
+  document.getElementById("newPost").value = "";
+  loadPosts();
+}
+
+function loadPosts() {
+  let posts = JSON.parse(localStorage.getItem("posts")) || [];
+  let postsDiv = document.getElementById("posts");
+  postsDiv.innerHTML = "";
+
+  if (posts.length === 0) {
+    postsDiv.innerHTML = "<p>No posts yet. Be the first!</p>";
+  } else {
+    posts.forEach(post => {
+      let div = document.createElement("div");
+      div.className = "post";
+      let imgTag = post.pic ? `<img src="${post.pic}" class="profile-pic">` : "";
+      div.innerHTML = imgTag + "<strong>" + post.author + ":</strong><br>" + post.text;
+      postsDiv.appendChild(div);
+    });
   }
 }
 
 function showLogin() {
   document.getElementById("signup").style.display = "none";
   document.getElementById("login").style.display = "block";
+  document.getElementById("ageCheck").style.display = "none";
+  document.getElementById("profileSetup").style.display = "none";
+  document.getElementById("homePage").style.display = "none";
 }
 
 function showSignup() {
   document.getElementById("login").style.display = "none";
   document.getElementById("signup").style.display = "block";
+  document.getElementById("ageCheck").style.display = "none";
+  document.getElementById("profileSetup").style.display = "none";
+  document.getElementById("homePage").style.display = "none";
 }
 </script>
 
 </body>
 </html>
+
