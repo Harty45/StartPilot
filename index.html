@@ -1,233 +1,82 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Newark Charter School - BPA</title>
-  <style>
-    /* Reset */
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+"use client";
+import React from "react";
+import { SparklesCore } from "@/components/ui/sparkles"
 
-    body {
-      font-family: Arial, sans-serif;
-      background: #fff;
-      color: #111;
-    }
+export function SparklesPreview() {
+  return (
+    <div className="h-[40rem] w-full bg-black flex flex-col items-center justify-center overflow-hidden rounded-md">
+      <h1 className="md:text-7xl text-3xl lg:text-9xl font-bold text-center text-white relative z-20">
+        Acme
+      </h1>
+      <div className="w-[40rem] h-40 relative">
+        {/* Gradients */}
+        <div className="absolute inset-x-20 top-0 bg-gradient-to-r from-transparent via-indigo-500 to-transparent h-[2px] w-3/4 blur-sm" />
+        <div className="absolute inset-x-20 top-0 bg-gradient-to-r from-transparent via-indigo-500 to-transparent h-px w-3/4" />
+        <div className="absolute inset-x-60 top-0 bg-gradient-to-r from-transparent via-sky-500 to-transparent h-[5px] w-1/4 blur-sm" />
+        <div className="absolute inset-x-60 top-0 bg-gradient-to-r from-transparent via-sky-500 to-transparent h-px w-1/4" />
 
-    a {
-      text-decoration: none;
-      color: inherit;
-    }
+        {/* Core component */}
+        <SparklesCore
+          background="transparent"
+          minSize={0.4}
+          maxSize={1}
+          particleDensity={1200}
+          className="w-full h-full"
+          particleColor="#FFFFFF"
+        />
 
-    /* HEADER */
-    header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 10px 20px;
-      background: #fff;
-      border-bottom: 1px solid #ccc;
-    }
-
-    .logo-name {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-size: 18px;
-      font-weight: bold;
-    }
-
-    .logo-name img {
-      height: 45px;
-    }
-
-    nav ul {
-      list-style: none;
-      display: flex;
-      gap: 10px;
-    }
-
-    nav ul li {
-      border: 1px solid #000;
-      padding: 6px 12px;
-      font-size: 14px;
-      background: #f5f5f5;
-    }
-
-    nav ul li:hover {
-      background: #ddd;
-    }
-
-    /* TOP STRIP */
-    .top-strip {
-      display: flex;
-      justify-content: space-between;
-      background: linear-gradient(to right, #0c1a4b 50%, #b40000 50%);
-      color: #fff;
-      font-weight: bold;
-      padding: 10px 20px;
-      font-size: 18px;
-    }
-
-    /* MAIN SECTION */
-    .main {
-      text-align: center;
-      padding: 50px 20px;
-    }
-
-    .main img {
-      width: 140px;
-      margin-bottom: 15px;
-    }
-
-    .main h1 {
-      font-size: 28px;
-      font-weight: bold;
-    }
-
-    .main .year {
-      margin-top: 8px;
-      font-size: 16px;
-      color: #444;
-    }
-
-    .main .btn {
-      margin-top: 15px;
-      padding: 10px 20px;
-      background: #d50000;
-      color: #fff;
-      font-weight: bold;
-      border: none;
-      border-radius: 3px;
-      cursor: pointer;
-    }
-
-    .main .btn:hover {
-      background: #a00000;
-    }
-
-    /* GREETINGS */
-    .greetings {
-      text-align: center;
-      padding: 40px 20px;
-    }
-
-    .greetings h2 {
-      font-size: 26px;
-      letter-spacing: 2px;
-      margin-bottom: 5px;
-    }
-
-    .greetings span {
-      font-size: 14px;
-      color: #666;
-    }
-
-    /* WELCOME SECTION */
-    .welcome {
-      background: #0c1a4b;
-      color: #fff;
-      text-align: center;
-      padding: 50px 20px;
-    }
-
-    .welcome h2 {
-      font-size: 24px;
-      margin-bottom: 15px;
-    }
-
-    .welcome p {
-      max-width: 700px;
-      margin: 0 auto 20px;
-      font-size: 14px;
-      line-height: 1.6;
-    }
-
-    .welcome .contact {
-      margin-top: 10px;
-      font-size: 13px;
-    }
-
-    /* RED BOTTOM ARROW STRIP */
-    .arrow-strip {
-      background: #b40000;
-      padding: 15px;
-      display: flex;
-      justify-content: flex-end;
-    }
-
-    .arrow-strip button {
-      background: none;
-      border: none;
-      color: #fff;
-      font-size: 22px;
-      cursor: pointer;
-    }
-  </style>
-</head>
-<body>
-
-  <!-- Header -->
-  <header>
-    <div class="logo-name">
-      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/51/Red_star.svg/1200px-Red_star.svg.png" alt="Logo">
-      <div>
-        NEWARK <br>
-        CHARTER SCHOOL
+        {/* Radial Gradient to prevent sharp edges */}
+        <div className="absolute inset-0 w-full h-full bg-black [mask-image:radial-gradient(350px_200px_at_top,transparent_20%,white)]"></div>
       </div>
     </div>
-    <nav>
-      <ul>
-        <li><a href="#">Home</a></li>
-        <li><a href="#">NCS and BPA Leadership</a></li>
-        <li><a href="#">BPA Chapter Information</a></li>
-      </ul>
-    </nav>
-  </header>
+  );
+}
 
-  <!-- Red/Blue Strip -->
-  <div class="top-strip">
-    <div>HOME PAGE</div>
-    <div>Business Professionals <br> of America</div>
-  </div>
-
-  <!-- Main -->
-  <section class="main">
-    <img src="https://via.placeholder.com/140" alt="Capture the Moment Logo">
-    <h1>NEWARK CHARTER <br> SCHOOL</h1>
-    <div class="year">2024 - 2025</div>
-    <button class="btn">JOIN BPA NOW!</button>
-  </section>
-
-  <!-- Greetings -->
-  <section class="greetings">
-    <h2>GREETINGS</h2>
-    <span>Newark, DE</span>
-  </section>
-
-  <!-- Welcome -->
-  <section class="welcome">
-    <h2>Welcome <br> to our Site</h2>
-    <p>
-      Welcome to NCS-BPA.com. Here we welcome you to the information you need to know about 
-      our school and about BPA. This site includes information such as, The Torch award, 
-      State Leadership Conference, BPA School Leadership, and many more. We hope you find 
-      this site informational! <br><br> – Thank you
-    </p>
-    <div class="contact">
-      Contact us – <br>
-      ncsbpawebsite7th@gmail.com
+export function SparklesPreviewDark() {
+  return (
+    <div className="h-[40rem] relative w-full bg-slate-950 flex flex-col items-center justify-center overflow-hidden rounded-md">
+      <div className="w-full absolute inset-0 h-screen">
+        <SparklesCore
+          id="tsparticlesfullpage"
+          background="transparent"
+          minSize={0.6}
+          maxSize={1.4}
+          particleDensity={100}
+          className="w-full h-full"
+          particleColor="#FFFFFF"
+          speed={1}
+        />
+      </div>
+      <h1 className="md:text-7xl text-3xl lg:text-9xl font-bold text-center text-white relative z-20">
+        Build faster
+      </h1>
     </div>
-  </section>
+  );
+}
 
-  <!-- Bottom Arrow -->
-  <div class="arrow-strip">
-    <button>&#10132;</button>
-  </div>
-
-</body>
-</html>
+export function SparklesPreviewColorful() {
+  return (
+    <div className="h-[40rem] relative w-full bg-black flex flex-col items-center justify-center overflow-hidden rounded-md">
+      <div className="w-full absolute inset-0 h-screen">
+        <SparklesCore
+          id="tsparticlescolorful"
+          background="transparent"
+          minSize={0.6}
+          maxSize={1.4}
+          particleDensity={100}
+          className="w-full h-full"
+          particleColor="#00ff00"
+          speed={0.5}
+        />
+      </div>
+      <div className="flex flex-col items-center justify-center gap-4 relative z-20">
+        <h1 className="md:text-7xl text-3xl lg:text-9xl font-bold text-center bg-clip-text text-transparent bg-gradient-to-b from-neutral-50 to-neutral-400">
+          The Future
+        </h1>
+        <p className="text-neutral-300 cursor-default text-center">
+          is brighter than you think
+        </p>
+      </div>
+    </div>
+  );
+}
