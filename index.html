@@ -1,82 +1,58 @@
-"use client";
-import React from "react";
-import { SparklesCore } from "@/components/ui/sparkles"
+<div style="font-family:'Segoe UI', sans-serif; color:#222; line-height:1.6; background:linear-gradient(180deg,#f7f3fc,#f0e8fa); padding:50px;">
 
-export function SparklesPreview() {
-  return (
-    <div className="h-[40rem] w-full bg-black flex flex-col items-center justify-center overflow-hidden rounded-md">
-      <h1 className="md:text-7xl text-3xl lg:text-9xl font-bold text-center text-white relative z-20">
-        Acme
-      </h1>
-      <div className="w-[40rem] h-40 relative">
-        {/* Gradients */}
-        <div className="absolute inset-x-20 top-0 bg-gradient-to-r from-transparent via-indigo-500 to-transparent h-[2px] w-3/4 blur-sm" />
-        <div className="absolute inset-x-20 top-0 bg-gradient-to-r from-transparent via-indigo-500 to-transparent h-px w-3/4" />
-        <div className="absolute inset-x-60 top-0 bg-gradient-to-r from-transparent via-sky-500 to-transparent h-[5px] w-1/4 blur-sm" />
-        <div className="absolute inset-x-60 top-0 bg-gradient-to-r from-transparent via-sky-500 to-transparent h-px w-1/4" />
+  <!-- HEADER -->
+  <header style="text-align:center; margin-bottom:60px;">
+    <h1 style="font-size:3em; margin-bottom:10px; color:#5b2db0; letter-spacing:1px;">ROBERT W. GORE</h1>
+    <p style="font-size:1.2em; color:#7a6ca9;">Innovator | Engineer | Inventor</p>
+  </header>
 
-        {/* Core component */}
-        <SparklesCore
-          background="transparent"
-          minSize={0.4}
-          maxSize={1}
-          particleDensity={1200}
-          className="w-full h-full"
-          particleColor="#FFFFFF"
-        />
+  <!-- WHO WAS SECTION -->
+  <section style="display:flex; align-items:center; justify-content:space-around; flex-wrap:wrap; margin-bottom:80px;">
+    <img src="YOUR_IMAGE_URL_HERE" alt="Robert W. Gore" style="max-width:300px; border-radius:12px; margin:20px; box-shadow:0 5px 15px rgba(0,0,0,0.15);">
+    <div style="max-width:480px; text-align:left; margin:20px;">
+      <h2 style="color:#5b2db0;">Who Was Robert W. Gore?</h2>
+      <p style="color:#555;">[Add short description here]</p>
+    </div>
+  </section>
 
-        {/* Radial Gradient to prevent sharp edges */}
-        <div className="absolute inset-0 w-full h-full bg-black [mask-image:radial-gradient(350px_200px_at_top,transparent_20%,white)]"></div>
+  <!-- WHAT DID HE DO -->
+  <section style="text-align:center; margin-bottom:80px;">
+    <h2 style="color:#5b2db0;">What Did He Do?</h2>
+    <div style="display:flex; justify-content:center; flex-wrap:wrap; gap:30px; margin-top:40px;">
+      <div style="background:#fff; border-radius:12px; padding:30px; width:250px; box-shadow:0 4px 12px rgba(0,0,0,0.1);">
+        <img src="https://img.icons8.com/ios-filled/100/5b2db0/lab-items.png" alt="Lab Icon" style="width:60px; margin-bottom:15px;">
+        <h3 style="color:#333;">[Title Here]</h3>
+        <p style="color:#666;">[Add a short detail here]</p>
+      </div>
+      <div style="background:#fff; border-radius:12px; padding:30px; width:250px; box-shadow:0 4px 12px rgba(0,0,0,0.1);">
+        <img src="https://img.icons8.com/ios-filled/100/5b2db0/chemical-structure.png" alt="Science Icon" style="width:60px; margin-bottom:15px;">
+        <h3 style="color:#333;">[Title Here]</h3>
+        <p style="color:#666;">[Add a short detail here]</p>
+      </div>
+      <div style="background:#fff; border-radius:12px; padding:30px; width:250px; box-shadow:0 4px 12px rgba(0,0,0,0.1);">
+        <img src="https://img.icons8.com/ios-filled/100/5b2db0/atoms.png" alt="Atom Icon" style="width:60px; margin-bottom:15px;">
+        <h3 style="color:#333;">[Title Here]</h3>
+        <p style="color:#666;">[Add a short detail here]</p>
       </div>
     </div>
-  );
-}
+  </section>
 
-export function SparklesPreviewDark() {
-  return (
-    <div className="h-[40rem] relative w-full bg-slate-950 flex flex-col items-center justify-center overflow-hidden rounded-md">
-      <div className="w-full absolute inset-0 h-screen">
-        <SparklesCore
-          id="tsparticlesfullpage"
-          background="transparent"
-          minSize={0.6}
-          maxSize={1.4}
-          particleDensity={100}
-          className="w-full h-full"
-          particleColor="#FFFFFF"
-          speed={1}
-        />
-      </div>
-      <h1 className="md:text-7xl text-3xl lg:text-9xl font-bold text-center text-white relative z-20">
-        Build faster
-      </h1>
+  <!-- HOW DID HE AMPLIFY HIS IMPACT -->
+  <section style="display:flex; align-items:center; justify-content:space-around; flex-wrap:wrap; margin-bottom:80px;">
+    <div style="max-width:480px; text-align:left; margin:20px;">
+      <h2 style="color:#5b2db0;">How Did He Amplify His Impact?</h2>
+      <p style="color:#555;">[Add short paragraph or bullet points here]</p>
     </div>
-  );
-}
+    <img src="https://img.icons8.com/ios-filled/150/5b2db0/connected-objects.png" alt="Network Icon" style="max-width:250px; margin:20px;">
+  </section>
 
-export function SparklesPreviewColorful() {
-  return (
-    <div className="h-[40rem] relative w-full bg-black flex flex-col items-center justify-center overflow-hidden rounded-md">
-      <div className="w-full absolute inset-0 h-screen">
-        <SparklesCore
-          id="tsparticlescolorful"
-          background="transparent"
-          minSize={0.6}
-          maxSize={1.4}
-          particleDensity={100}
-          className="w-full h-full"
-          particleColor="#00ff00"
-          speed={0.5}
-        />
-      </div>
-      <div className="flex flex-col items-center justify-center gap-4 relative z-20">
-        <h1 className="md:text-7xl text-3xl lg:text-9xl font-bold text-center bg-clip-text text-transparent bg-gradient-to-b from-neutral-50 to-neutral-400">
-          The Future
-        </h1>
-        <p className="text-neutral-300 cursor-default text-center">
-          is brighter than you think
-        </p>
-      </div>
-    </div>
-  );
-}
+  <!-- FOOTER -->
+  <footer style="text-align:center; font-size:0.9em; color:#7a6ca9; border-top:1px solid #dcd0f2; padding-top:20px;">
+    <p>© 2025 Project on Robert W. Gore | Designed with Wix</p>
+  </footer>
+
+</div>
+
+
+
+  
